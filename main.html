@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Кохаю тебе</title>
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #f0f0f0;
+      margin: 0;
+    }
+
+    #container {
+      position: relative;
+      width: 600px;
+      height: 300px;
+    }
+
+    .heart {
+      position: absolute;
+      width: 15px;
+      height: 15px;
+      background-color: red;
+      clip-path: polygon(50% 0%, 0% 38%, 12% 100%, 50% 75%, 88% 100%, 100% 38%);
+      opacity: 0;
+      transition: opacity 0.3s ease-in-out;
+    }
+
+    #counter {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 50px;
+      color: #FF69B4;
+      font-family: Arial, sans-serif;
+    }
+
+    #startButton {
+      padding: 10px 20px;
+      background-color: #FF69B4;
+      color: white;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      border-radius: 5px;
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    #modal {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: white;
+      padding: 20px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      border-radius: 10px;
+      text-align: center;
+    }
+
+    #modal h2 {
+      font-size: 24px;
+      margin-bottom: 20px;
+      color: #FF69B4;
+    }
+
+    #modal p {
+      font-size: 18px;
+    }
+
+    .letter {
+      font-size: 100px;
+      color: #FF69B4;
+      font-family: Arial, sans-serif;
+      opacity: 0;
+      transition: opacity 2s ease-in-out;
+    }
+
+    #letterA {
+      position: absolute;
+      top: 50%;
+      right: 100px;
+      transform: translate(50%, -50%);
+    }
+
+    #letterY {
+      position: absolute;
+      top: 50%;
+      left: 100px;
+      transform: translate(-50%, -50%);
+    }
+
+    .timer {
+      font-size: 24px;
+      color: #333;
+      position: absolute;
+      top: 20px;
+      opacity: 0;
+      transition: opacity 2s ease-in-out;
+    }
+
+    #timerA {
+      right: 100px;
+      transform: translateX(50%);
+    }
+
+    #timerY {
+      left: 100px;
+      transform: translateX(-50%);
+    }
+  </style>
+</head>
+<body>
+  <div id="container">
+    <div id="letterA" class="letter">А</div>
+    <div id="letterY" class="letter">А</div>
+    <div id="counter">0</div>
+    <div id="timerA" class="timer">0%</div>
+    <div id="timerY" class="timer">0%</div>
+  </div>
+  <button id="startButton">Здивуватись</button>
+
+  <div id="modal">
+    <h2>Інформативне повідомлення!</h2>
+    <p id="comparisonMessage"></p>
+  </div>
+
+  <script>
+    document.getElementById('startButton').addEventListener('click', function () {
+      const container = document.getElementById('container');
+      const counterElement = document.getElementById('counter');
+      const modal = document.getElementById('modal');
+      const comparisonMessage = document.getElementById('comparisonMessage');
+      const letterA = document.getElementById('letterA');
+      const letterY = document.getElementById('letterY');
+      const timerA = document.getElementById('timerA');
+      const timerY = document.getElementById('timerY');
+
+      const startDate = new Date('2021-09-24');
+      const today = new Date();
+      const diffTime = Math.abs(today - startDate);
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+      const birthDateAndriy = new Date('2005-07-14');
+      const birthDateYaryna = new Date('2006-02-25');
+      const daysSinceBirthAndriy = Math.ceil((today - birthDateAndriy) / (1000 * 60 * 60 * 24));
+      const daysSinceBirthYaryna = Math.ceil((today - birthDateYaryna) / (1000 * 60 * 60 * 24));
+
+      const averageLifespanDays = 26280;
+
+      let index = 0;
+      const updateInterval = 150; // time in ms between updates
+
+      function getHeartPosition(t) {
+        const x = 16 * Math.sin(t) ** 3;
+        const y = -13 * Math.cos(t) + 5 * Math.cos(2 * t) + 2 * Math.cos(3 * t) + Math.cos(4 * t);
+        return { x, y };
+      }
+
+      function updateTimers() {
+        const percentA = ((index / diffDays) * (daysSinceBirthAndriy / averageLifespanDays) * 100).toFixed(2);
+        const percentY = ((index / diffDays) * (daysSinceBirthYaryna / averageLifespanDays) * 100).toFixed(2);
+
+        timerA.textContent = `${percentA}%`;
+        timerY.textContent = `${percentY}%`;
+      }
+
+      function showHeart() {
+        if (index < diffDays) {
+          const heart = document.createElement('div');
+          heart.classList.add('heart');
+
+          const t = (Math.PI * 2 * index) / diffDays;
+          const position = getHeartPosition(t);
+
+          heart.style.left = `${300 + position.x * 10}px`;
+          heart.style.top = `${150 + position.y * 10}px`;
+
+          container.appendChild(heart);
+
+          setTimeout(() => {
+            heart.style.opacity = 1;
+          }, 50);
+
+          counterElement.textContent = index + 1;
+
+          updateTimers(); // update timers incrementally
+
+          index++;
+          setTimeout(showHeart, updateInterval);
+        } else {
+          const comparisonText = `Середня тривалість життя людини складає ${averageLifespanDays} днів. Ми вже разом ${diffDays} днів, що є ${(diffDays / averageLifespanDays * 100).toFixed(2)}% від загальної тривалості життя! Я люблю тебе ❤`;
+          comparisonMessage.textContent = comparisonText;
+          modal.style.display = 'block';
+        }
+      }
+
+      function showLetters() {
+        letterA.style.opacity = 1;
+        letterY.style.opacity = 1;
+        timerA.style.opacity = 1;
+        timerY.style.opacity = 1;
+      }
+
+      this.style.display = 'none';
+
+      showHeart();
+      showLetters();
+    });
+  </script>
+</body>
+</html>
